@@ -23,6 +23,7 @@ with webdriver.Chrome("/home/len/Work/RR_Bot/chromedriver") as driver:
     # wait.until(presence_of_element_located((By.CSS_SELECTOR, ".chapter-inner")))
     # chapter_div = driver.find_element(By.CSS_SELECTOR, ".chapter-inner").get_attribute(
     #     "outerHTML"
+
     # )
     chapter_div = open("t.html")
 
