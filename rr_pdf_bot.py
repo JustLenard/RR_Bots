@@ -5,39 +5,30 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 import time
-import string
+
+fiction_link = "https://www.royalroad.com/fiction/36065/sylver-seeker/chapter/746919/ch106-no-place-like"
+path_to_chromedriver = "/home/len/Work/RR_Bots/chromedriver"
+file_name = fiction_link.split("/")[5]
+
+driver = webdriver.Chrome(path_to_chromedriver)
+wait = WebDriverWait(driver, 10)
 
 
-# browser = webdriver.Chrome("/home/len/Work/RR_Bot/chromedriver")
-# browser.get("http://google.com/ncr")
-# time.sleep(100)
-# comm_box = WebDriverWait(browser, 100)
+def get_chapters_content(link, driver):
 
-with webdriver.Chrome("/home/len/Work/RR_Bot/chromedriver") as driver:
+    driver.get(link)
 
-    wait = WebDriverWait(driver, 10)
-    # driver.get(
-    #     "https://www.royalroad.com/fiction/39336/valkyries-shadow/chapter/904348/empire-in-chains-act-6-chapter-13"
-    # )
-
-    # wait.until(presence_of_element_located((By.CSS_SELECTOR, ".chapter-inner")))
-    # chapter_div = driver.find_element(By.CSS_SELECTOR, ".chapter-inner").get_attribute(
-    #     "outerHTML"
-
-    # )
-    chapter_div = open("t.html")
-
-    # print(chapter_div)
+    wait.until(presence_of_element_located((By.CSS_SELECTOR, ".chapter-inner")))
+    chapter_div = driver.find_element(By.CSS_SELECTOR, ".chapter-inner").get_attribute(
+        "outerHTML"
+    )
 
     soup = BeautifulSoup(chapter_div, "html.parser")
 
-    all_p = soup.find_all("p")
-    # print(len(soup.find_all("p")))
-    # print(all_p[0].text)
-    # pdf_file = open("pdf.pdf", "a")
-    # pdf_file.write("hero")
-    with open("pdf.pdf", "w") as pdf_file:
-        for content in all_p:
+    all_p_tags = soup.find_all("p")
+
+    with open(file_name, "a") as file:
+        for content in all_p_tags:
 
             cleaned_text = (
                 content.text.replace("\t", "")
@@ -45,13 +36,22 @@ with webdriver.Chrome("/home/len/Work/RR_Bot/chromedriver") as driver:
                 # .replace("\n", "")
             )
 
-            print(len(cleaned_text))
-            # if len(cleaned_text) > 100:
-            #     cleaned_text[100] = "\n"
-            pdf_file.write(cleaned_text + "\n")
+            file.write(cleaned_text + "\n\n")
 
-    # driver.find_element_by_name("q").send_keys("cheese" + Keys.RETURN)
-    # time.sleep(100)
+    wait.until(
+        presence_of_element_located((By.CSS_SELECTOR, ".btn.btn-primary.col-xs-12"))
+    )
 
-    # for i, result in results.iteritems():
-    #     print(f"#{i}: {result.text} ({result.get_property('href')})")
+    next_chapter_link = driver.find_elements(
+        By.CSS_SELECTOR, ".btn.btn-primary.col-xs-12"
+    )[1].get_attribute("href")
+
+    if next_chapter_link != None:
+
+        time.sleep(2)
+        get_chapters_content(next_chapter_link, driver)
+
+
+get_chapters_content(fiction_link, driver)
+
+driver.close()
