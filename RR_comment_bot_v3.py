@@ -11,8 +11,8 @@ path_to_chromedriver = "/home/len/Work/RR_Bots/chromedriver"
 home_page = "https://www.royalroad.com/account/login"
 follow_page = "https://www.royalroad.com/my/follows"
 
-email = "justlenard.justme@gmail.com"
-password = "Close23282001"
+email = ""
+password = ""
 
 # driver = webdriver.Chrome(path_to_chromedriver)
 # wait = WebDriverWait(driver, 10)
