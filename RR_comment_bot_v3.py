@@ -14,8 +14,8 @@ base_url = 'https://www.royalroad.com'
 my_comment = "Your neighboring AI overlord sends his warm regards and thanks the author for the chapter."
 
 
-email = ""
-password = ""
+email = "justlenard.justme@gmail.com"
+password = "Close23282001"
 
 driver = webdriver.Chrome(path_to_chromedriver)
 wait = WebDriverWait(driver, 10)
@@ -57,7 +57,10 @@ def accept_privacy_promt():
 
 #     print(chapter_links)
 
-chapter_links = ['https://www.royalroad.com/fiction/16946/azarinth-healer/chapter/1057234/chapter-907-fissure', 'https://www.royalroad.com/fiction/32027/earths-eulogy/chapter/1043056/chapter-7-april-93-ad-red-river--a-different-situation', 'https://www.royalroad.com/fiction/20568/tree-of-aeons-an-isekai-story/chapter/1057303/cloven-hoofs', 'https://www.royalroad.com/fiction/39336/valkyries-shadow/chapter/1057150/the-tiger-and-the-dragon-act-8-chapter-10', 'https://www.royalroad.com/fiction/39408/beware-of-chicken/chapter/1054679/interlude-fortuitous-encounter', 'https://www.royalroad.com/fiction/21188/forge-of-destiny/chapter/649038/threads-62-dressmaker-2', 'https://www.royalroad.com/fiction/45384/a-sinners-eden/chapter/741841/ch-19-evo', 'https://www.royalroad.com/fiction/42367/12-miles-below/chapter/744074/book-2-prologue', 'https://www.royalroad.com/fiction/48211/deathworld-commando-reborn/chapter/1050917/vol6-ch132--i-am-who-i-am', 'https://www.royalroad.com/fiction/26675/a-journey-of-black-and-red/chapter/1054319/182-the-first-trial', 'https://www.royalroad.com/fiction/40182/only-villains-do-that/chapter/818541/231-in-which-the-dark-lord-battens-down-the-hatches', 'https://www.royalroad.com/fiction/23173/the-simulacrum/chapter/1050311/volume-4-extra-7-there-is-no-escaping-the-ships', 'https://www.royalroad.com/fiction/37155/knight-and-smith/chapter/1045363/book-two-chapter-fifty-eight', 'https://www.royalroad.com/fiction/41330/virtuous-sons-a-greco-roman-xianxia/chapter/1029394/1121', 'https://www.royalroad.com/fiction/36065/sylver-seeker/chapter/746919/ch106-no-place-like', 'https://www.royalroad.com/fiction/21410/super-minion/chapter/593299/ch50-spilt-milk', 'https://www.royalroad.com/fiction/18186/the-scourged-earth/chapter/418528/614-drama-and-queens']
+# chapter_links = ['https://www.royalroad.com/fiction/16946/azarinth-healer/chapter/1057234/chapter-907-fissure?comments=1', 'https://www.royalroad.com/fiction/32027/earths-eulogy/chapter/1043056/chapter-7-april-93-ad-red-river--a-different-situation', 'https://www.royalroad.com/fiction/20568/tree-of-aeons-an-isekai-story/chapter/1057303/cloven-hoofs', 'https://www.royalroad.com/fiction/39336/valkyries-shadow/chapter/1057150/the-tiger-and-the-dragon-act-8-chapter-10', 'https://www.royalroad.com/fiction/39408/beware-of-chicken/chapter/1054679/interlude-fortuitous-encounter', 'https://www.royalroad.com/fiction/21188/forge-of-destiny/chapter/649038/threads-62-dressmaker-2', 'https://www.royalroad.com/fiction/45384/a-sinners-eden/chapter/741841/ch-19-evo', 'https://www.royalroad.com/fiction/42367/12-miles-below/chapter/744074/book-2-prologue', 'https://www.royalroad.com/fiction/48211/deathworld-commando-reborn/chapter/1050917/vol6-ch132--i-am-who-i-am', 'https://www.royalroad.com/fiction/26675/a-journey-of-black-and-red/chapter/1054319/182-the-first-trial', 'https://www.royalroad.com/fiction/40182/only-villains-do-that/chapter/818541/231-in-which-the-dark-lord-battens-down-the-hatches', 'https://www.royalroad.com/fiction/23173/the-simulacrum/chapter/1050311/volume-4-extra-7-there-is-no-escaping-the-ships', 'https://www.royalroad.com/fiction/37155/knight-and-smith/chapter/1045363/book-two-chapter-fifty-eight', 'https://www.royalroad.com/fiction/41330/virtuous-sons-a-greco-roman-xianxia/chapter/1029394/1121', 'https://www.royalroad.com/fiction/36065/sylver-seeker/chapter/746919/ch106-no-place-like', 'https://www.royalroad.com/fiction/21410/super-minion/chapter/593299/ch50-spilt-milk', 'https://www.royalroad.com/fiction/18186/the-scourged-earth/chapter/418528/614-drama-and-queens']
+chapter_links = ['https://www.royalroad.com/fiction/16946/azarinth-healer/chapter/1057234/chapter-907-fissure']
+# chapter_links = ['https://www.royalroad.com/fiction/61309/dracula-world-of-war/chapter/1058865/chapter-4-rosy-cheeks-and-new-monster']
+
 
 
 
@@ -72,8 +75,7 @@ def load_comments():
     
     driver.execute_script("arguments[0].scrollIntoView(true);", comment_input)
 
-def check_if_my_comment_exists(comments_html_container):
-    comments_soup = BeautifulSoup(comments_html_container, "html.parser")
+def my_comment_exists(comments_soup):
     all_p_tags =  comments_soup.find_all('p')
     
     for p in all_p_tags:
@@ -81,22 +83,56 @@ def check_if_my_comment_exists(comments_html_container):
             return True
     return False
     
+def should_load_another_comment_page(comments_soup):
+    all_comment_divs =  comments_soup.find_all('div', class_='comment')
+    return len(all_comment_divs) == 10
 
-for link in chapter_links:
-    driver.get(link)
-    wait.until(presence_of_element_located((By.CSS_SELECTOR, ".chapter-inner.chapter-content")))
-    load_comments()
-    time.sleep(2)
-    comments_html_container = driver.find_element(By.CSS_SELECTOR, ".portlet-body.comments.comment-container").get_attribute(
-    "outerHTML")
-    response = check_if_my_comment_exists(comments_html_container)
-    print(response)
-
-    if response == False:
+def last_page_button_exists():
+    try:
         nav = driver.find_element(By.CSS_SELECTOR, ".text-center.chapter-nav").get_attribute('outerHTML')
         nav_soup = BeautifulSoup(nav, 'html.parser')
+        button = nav_soup.find('a', string='Last »')
+        print('button', button)
+        return button != None
+    except:
+        return False
 
-        comments_pagination = ()
+def should_leave_comment(link, comment_page_number):
+    driver.get(link + '?comments=' + str(comment_page_number))
+    wait.until(presence_of_element_located((By.CSS_SELECTOR, ".chapter-inner.chapter-content")))
+    load_comments()
+    time.sleep(1)
+    comments_html_container = driver.find_element(By.CSS_SELECTOR, ".portlet-body.comments.comment-container").get_attribute(
+    "outerHTML")
+    comments_soup = BeautifulSoup(comments_html_container, "html.parser")
+    print('my comment exists', my_comment_exists(comments_soup))
+    
+    if my_comment_exists(comments_soup):
+        return False
+
+    # shoud_load_comment_page = should_load_another_comment_page(comments_soup)
+    # print('shoud_load_comment_page', shoud_load_comment_page)
+    last_page_button_ex = last_page_button_exists()
+    print('last_page_button_ex',last_page_button_ex)
+    if last_page_button_exists():
+        print('calling recursively the funcion')
+        should_leave_comment(link, comment_page_number + 1 )
+    else:
+        return True
+    
+for link in chapter_links:
+    leave_comment = should_leave_comment(link, 1)
+    print('leave_comment',leave_comment)
+
+
+    # 
+
+    
+
+
+    # print(shoud_load_comment_page)
+
+    # print(response)
 
 
     
@@ -134,3 +170,9 @@ time.sleep(55)
 # comments_pagination.pop(0)
 
 # print(comments_pagination)
+
+    # if response == False:
+    #     nav = driver.find_element(By.CSS_SELECTOR, ".text-center.chapter-nav").get_attribute('outerHTML')
+    #     nav_soup = BeautifulSoup(nav, 'html.parser')
+
+    #     comments_pagination = ()
