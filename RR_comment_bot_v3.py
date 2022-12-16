@@ -18,6 +18,7 @@ my_user_name = "Lenard"
 email = ""
 password = ""
 
+time.sleep(5)
 driver = webdriver.Chrome(path_to_chromedriver)
 wait = WebDriverWait(driver, 10)
 
@@ -93,8 +94,8 @@ def my_comment_exists(comments_soup):
         my_profile_link = comment_container.find("a", string=my_user_name)
         if my_profile_link != None:
             return True
-            if comment_container.find("p", string=my_comment) != None:
-                return True
+            # if comment_container.find("p", string=my_comment) != None:
+            #     return True
 
     return False
 
@@ -111,16 +112,16 @@ def last_page_button_exists():
         return False
 
 
-def i_am_blocked_from_commenting():
+def i_can_comment():
     try:
         driver.switch_to.frame("comment_ifr")
         time.sleep(3)
         driver.find_element(By.ID, "tinymce").find_element(By.TAG_NAME, "p")
         driver.switch_to.parent_frame()
-        return False
+        return True
     except:
         print("I am blocked from commenting")
-        return True
+        return False
 
 
 # Maybe another day
@@ -150,14 +151,13 @@ def should_leave_comment(link, comment_page_number):
         print("Already left comment here")
         return False
     elif last_page_button_exists():
-        print("Checking over comment pages")
+        print("Checking comment page number", comment_page_number)
         return should_leave_comment(link, comment_page_number + 1)
     else:
         return True
 
 
 def leave_comment():
-
     driver.switch_to.frame("comment_ifr")
     time.sleep(3)
 
@@ -205,19 +205,18 @@ for link in links_to_chapters:
     print("Checking out ", link)
     driver.get(link)
     wait_for_page_to_load()
-    if i_am_blocked_from_commenting():
-        break
 
-    if should_leave_comment(link, 1):
-        leave_comment()
-        wait_for_page_to_load()
-        if is_not_first_chapter():
-            load_previous_chapter()
+    if i_can_comment():
+        if should_leave_comment(link, 1):
+            leave_comment()
             wait_for_page_to_load()
+            if is_not_first_chapter():
+                load_previous_chapter()
+                wait_for_page_to_load()
 
-            current_url = driver.current_url
-            # comment_on_previous_chapters(current_url)
+                current_url = driver.current_url
+                # comment_on_previous_chapters(current_url)
 
-    time.sleep(2)
+        time.sleep(2)
 
 print("done")
