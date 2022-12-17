@@ -1,3 +1,4 @@
+import os
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -13,12 +14,13 @@ follow_page = "https://www.royalroad.com/my/follows"
 base_url = "https://www.royalroad.com"
 my_comment = "Thank you for the chapter!"
 my_user_name = "Lenard"
-
+links_file_name = "chapter_links.txt"
 
 email = ""
 password = ""
 
 time.sleep(5)
+
 driver = webdriver.Chrome(path_to_chromedriver)
 wait = WebDriverWait(driver, 10)
 
@@ -70,7 +72,44 @@ def get_chapter_links():
 
 
 links_to_chapters = get_chapter_links()
-print("chapter_links", links_to_chapters)
+# print("chapter_links", links_to_chapters)
+
+
+def file_with_links_exists(file_name):
+    return os.path.isfile(file_name) == False
+
+
+def create_file_with_links(file_name):
+    file = open(file_name, "w")
+    file.close()
+
+
+if file_with_links_exists(links_file_name):
+    create_file_with_links(links_file_name)
+
+
+def filter_out_the_old_links(links_array):
+    new_links = []
+    links_from_file = []
+
+    with open(links_file_name, "r+") as f:
+        links_from_file = f.readlines()
+        links_from_file = [x.replace("\n", "") for x in links_from_file]
+
+        for link in links_array:
+
+            if link not in links_from_file:
+                new_links.append(link)
+                f.write(str(link) + "\n")
+
+        if len(links_from_file) > 500:
+            os.remove(links_file_name)
+        print(len(links_from_file))
+    return new_links, links_from_file
+
+
+only_new_links, links_from_file = filter_out_the_old_links(links_to_chapters)
+print("Those are the new chapater links ", only_new_links)
 
 
 def wait_for_page_to_load():
@@ -184,6 +223,11 @@ def load_previous_chapter():
 
 
 def comment_on_previous_chapters(current_url):
+
+    if current_url in links_from_file:
+        print("The link is in the file. Aborting.")
+        return
+
     driver.get(current_url)
     wait_for_page_to_load()
     print("should_leave_comment", should_leave_comment(current_url, 1))
@@ -201,7 +245,7 @@ def comment_on_previous_chapters(current_url):
             comment_on_previous_chapters(current_url)
 
 
-for link in links_to_chapters:
+for link in only_new_links:
     print("Checking out ", link)
     driver.get(link)
     wait_for_page_to_load()
@@ -215,8 +259,8 @@ for link in links_to_chapters:
                 wait_for_page_to_load()
 
                 current_url = driver.current_url
-                # comment_on_previous_chapters(current_url)
+                comment_on_previous_chapters(current_url)
 
         time.sleep(2)
 
-print("done")
+print("Finished succefully")
