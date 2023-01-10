@@ -75,7 +75,7 @@ links_to_chapters = get_chapter_links()
 # print("chapter_links", links_to_chapters)
 
 
-def file_with_links_exists(file_name):
+def file_with_links_does_not_exist(file_name):
     return os.path.isfile(file_name) == False
 
 
@@ -84,7 +84,7 @@ def create_file_with_links(file_name):
     file.close()
 
 
-if file_with_links_exists(links_file_name):
+if file_with_links_does_not_exist(links_file_name):
     create_file_with_links(links_file_name)
 
 
