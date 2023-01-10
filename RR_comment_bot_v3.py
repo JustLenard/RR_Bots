@@ -151,7 +151,7 @@ def last_page_button_exists():
         return False
 
 
-def i_can_comment():
+def can_comment():
     try:
         driver.switch_to.frame("comment_ifr")
         time.sleep(3)
@@ -228,7 +228,7 @@ def comment_on_previous_chapters(current_url):
         print("The link is in the file. Aborting.")
         return
 
-    driver.get(current_url)
+    driver.get(current_url)  # This line is sus
     wait_for_page_to_load()
     print("should_leave_comment", should_leave_comment(current_url, 1))
 
@@ -250,7 +250,7 @@ for link in only_new_links:
     driver.get(link)
     wait_for_page_to_load()
 
-    if i_can_comment():
+    if can_comment():
         if should_leave_comment(link, 1):
             leave_comment()
             wait_for_page_to_load()
