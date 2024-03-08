@@ -5,6 +5,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
+from dotenv import load_dotenv
+
+load_dotenv()
+
+print(os.getenv("RR_EMAIL"))
+
 import time
 
 path_to_chromedriver = "/home/len/work/RR_Bots/chromedriver"
@@ -16,8 +22,8 @@ my_comment = "Thank you for the chapter!"
 my_user_name = "Lenard"
 links_file_name = "chapter_links.txt"
 
-email = ""
-password = ""
+email = os.getenv("RR_EMAIL")
+password = os.getenv("RR_PASSWORD")
 
 time.sleep(5)
 
