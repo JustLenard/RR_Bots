@@ -2,3 +2,5 @@ chromedriver
 RR_Bot_v2.py
 .gitignore
 .env
+html
+__pycache__

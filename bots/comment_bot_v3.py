@@ -1,58 +1,21 @@
 import os
 from bs4 import BeautifulSoup
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
-from dotenv import load_dotenv
-
-load_dotenv()
-
-print(os.getenv("RR_EMAIL"))
-
 import time
+from login import Loged_in_driver_instance
 
-path_to_chromedriver = "/home/len/work/RR_Bots/chromedriver"
 
-home_page = "https://www.royalroad.com/account/login"
 follow_page = "https://www.royalroad.com/my/follows"
 base_url = "https://www.royalroad.com"
 my_comment = "Thank you for the chapter!"
 my_user_name = "Lenard"
 links_file_name = "chapter_links.txt"
 
-email = os.getenv("RR_EMAIL")
-password = os.getenv("RR_PASSWORD")
 
-time.sleep(5)
-
-driver = webdriver.Chrome(path_to_chromedriver)
+driver = Loged_in_driver_instance().get_logged_in_driver_instance()
 wait = WebDriverWait(driver, 10)
-
-
-def log_in(email, password):
-    driver.get(home_page)
-    wait.until(presence_of_element_located((By.CSS_SELECTOR, "#email")))
-    driver.find_element(By.CSS_SELECTOR, "#email").send_keys(email)
-    driver.find_element(By.CSS_SELECTOR, "#password").send_keys(password)
-    driver.find_element(By.CSS_SELECTOR, "#password").send_keys(Keys.RETURN)
-    driver.get(follow_page)
-
-
-def accept_privacy_promt():
-    wait.until(
-        presence_of_element_located(
-            (By.XPATH, '//*[@id="ncmp__tool"]/div/div/div[3]/div[1]/button[2]')
-        )
-    )
-    driver.find_element(
-        By.XPATH, '//*[@id="ncmp__tool"]/div/div/div[3]/div[1]/button[2]'
-    ).click()
-
-
-log_in(email, password)
-accept_privacy_promt()
 
 
 def get_chapter_links():
@@ -145,7 +108,7 @@ def my_comment_exists(comments_soup):
     return False
 
 
-def last_page_button_exists():
+def is_last_comment_page():
     try:
         nav = driver.find_element(
             By.CSS_SELECTOR, ".text-center.chapter-nav"
@@ -181,7 +144,7 @@ def can_comment():
 
 
 def should_leave_comment(link, comment_page_number):
-    driver.get(link + "?comments=" + str(comment_page_number))
+    driver.get(f"{link}?comments={str(comment_page_number)}")
     wait_for_page_to_load()
     load_comment_section()
 
@@ -195,7 +158,7 @@ def should_leave_comment(link, comment_page_number):
     if my_comment_exists(comments_soup):
         print("Already left comment here")
         return False
-    elif last_page_button_exists():
+    elif is_last_comment_page():
         print("Checking comment page number", comment_page_number)
         return should_leave_comment(link, comment_page_number + 1)
     else:
@@ -270,3 +233,7 @@ for link in only_new_links:
         time.sleep(2)
 
 print("Finished succefully")
+
+
+def vaild_paranthesis(string: str):
+    pass
