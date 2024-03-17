@@ -11,7 +11,7 @@ follow_page = "https://www.royalroad.com/my/follows"
 base_url = "https://www.royalroad.com"
 my_comment = "Thank you for the chapter!"
 my_user_name = "Lenard"
-links_file_name = "chapter_links.txt"
+links_file_name = "novels_info.txt"
 
 
 driver = Loged_in_driver_instance().get_logged_in_driver_instance()
@@ -20,6 +20,7 @@ wait = WebDriverWait(driver, 10)
 
 def get_chapter_links():
     chapter_links = []
+    driver.get(follow_page)
     wait.until(presence_of_element_located((By.CSS_SELECTOR, ".fiction-list-item.row")))
     follow_list_container = driver.find_element(
         By.CSS_SELECTOR, "#result"
@@ -41,7 +42,7 @@ def get_chapter_links():
 
 
 links_to_chapters = get_chapter_links()
-# print("chapter_links", links_to_chapters)
+print("chapter_links", links_to_chapters)
 
 
 def file_with_links_does_not_exist(file_name):
