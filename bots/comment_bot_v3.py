@@ -200,7 +200,6 @@ def comment_on_previous_chapters(current_url):
 
     driver.get(current_url)  # This line is sus
     wait_for_page_to_load()
-    print("should_leave_comment", should_leave_comment(current_url, 1))
 
     if should_leave_comment(current_url, 1):
         leave_comment()
