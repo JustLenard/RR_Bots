@@ -22,14 +22,13 @@ class Loged_in_driver_instance:
 
     def log_in(self, email: str, password: str):
         self.driver.get(self.home_page)
-        print(email)
-        time.sleep(5)
+        time.sleep(1)
 
         self.wait.until(presence_of_element_located((By.CSS_SELECTOR, "#email")))
         self.driver.find_element(By.CSS_SELECTOR, "#email").send_keys(email)
         self.driver.find_element(By.CSS_SELECTOR, "#password").send_keys(password)
         self.driver.find_element(By.CSS_SELECTOR, "#password").send_keys(Keys.RETURN)
-        time.sleep(5)
+        time.sleep(1)
 
     def accept_privacy_promt(self):
         self.wait.until(
@@ -40,14 +39,10 @@ class Loged_in_driver_instance:
         self.driver.find_element(
             By.XPATH, '//*[@id="ncmp__tool"]/div/div/div[3]/div[1]/button[2]'
         ).click()
-        time.sleep(5)
+        time.sleep(1)
 
     def get_logged_in_driver_instance(self):
         self.log_in(self.email, self.password)
-        # self.accept_privacy_promt()
+        time.sleep(1)
+        self.accept_privacy_promt()
         return self.driver
-
-    def dostuff(self):
-        self.log_in(self.email, self.password)
-        print(self.email)
-        print(self.password)

@@ -4,3 +4,4 @@ RR_Bot_v2.py
 .env
 html
 __pycache__
+.mypy_cache

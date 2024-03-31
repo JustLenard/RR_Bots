@@ -1,3 +1,4 @@
+import json
 import os
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
@@ -11,14 +12,14 @@ follow_page = "https://www.royalroad.com/my/follows"
 base_url = "https://www.royalroad.com"
 my_comment = "Thank you for the chapter!"
 my_user_name = "Lenard"
-links_file_name = "novels_info.txt"
+links_file_name = "../db/novels_info.txt"
 
 
 driver = Loged_in_driver_instance().get_logged_in_driver_instance()
 wait = WebDriverWait(driver, 10)
 
 
-def get_chapter_links():
+def get_chapter_links() -> list[str]:
     chapter_links = []
     driver.get(follow_page)
     wait.until(presence_of_element_located((By.CSS_SELECTOR, ".fiction-list-item.row")))
@@ -37,12 +38,14 @@ def get_chapter_links():
         else:
             chapter_links.append(base_url + a_tags[0]["href"])
 
-    print(chapter_links)
     return chapter_links
 
 
 links_to_chapters = get_chapter_links()
-print("chapter_links", links_to_chapters)
+print(
+    "\033[93m\033[1m This is links_to_chapters \033[0m",
+    json.dumps(links_to_chapters, indent=4),
+)
 
 
 def file_with_links_does_not_exist(file_name):
@@ -60,26 +63,29 @@ if file_with_links_does_not_exist(links_file_name):
 
 def filter_out_the_old_links(links_array):
     new_links = []
-    links_from_file = []
 
-    with open(links_file_name, "r+") as f:
-        links_from_file = f.readlines()
-        links_from_file = [x.replace("\n", "") for x in links_from_file]
+    with open(links_file_name, "r+") as file:
+        links_from_file = {link.replace("\n", "") for link in file.readlines()}
 
         for link in links_array:
 
             if link not in links_from_file:
                 new_links.append(link)
-                f.write(str(link) + "\n")
+                file.write(str(link) + "\n")
 
-        if len(links_from_file) > 500:
+        if len(links_from_file) > 1000:
             os.remove(links_file_name)
-        print(len(links_from_file))
+        print(f"There are {len(links_from_file)} links in the file")
     return new_links, links_from_file
 
 
 only_new_links, links_from_file = filter_out_the_old_links(links_to_chapters)
-print("Those are the new chapater links ", only_new_links)
+
+
+print(
+    "\033[93m\033[1m This is only_new_links \033[0m",
+    json.dumps(only_new_links, indent=4),
+)
 
 
 def wait_for_page_to_load():
@@ -103,13 +109,10 @@ def my_comment_exists(comments_soup):
         my_profile_link = comment_container.find("a", string=my_user_name)
         if my_profile_link != None:
             return True
-            # if comment_container.find("p", string=my_comment) != None:
-            #     return True
-
     return False
 
 
-def is_last_comment_page():
+def is_not_last_comment_page():
     try:
         nav = driver.find_element(
             By.CSS_SELECTOR, ".text-center.chapter-nav"
@@ -124,7 +127,7 @@ def is_last_comment_page():
 def can_comment():
     try:
         driver.switch_to.frame("comment_ifr")
-        time.sleep(3)
+        time.sleep(1)
         driver.find_element(By.ID, "tinymce").find_element(By.TAG_NAME, "p")
         driver.switch_to.parent_frame()
         return True
@@ -133,20 +136,16 @@ def can_comment():
         return False
 
 
-# Maybe another day
-# def get_authors_name():
-#     elem = driver.find_element(By.CSS_SELECTOR, ".font-blue-dark").get_attribute(
-#         "outerHTML"
-#     )
-#     soup = BeautifulSoup(elem, "html.parser")
-#     print("soup", soup)
-#     print(soup.string)
-#     print(soup.a.string)
+def should_leave_comment(link: str, comment_page_number: int) -> bool:
+    # We are already on the firt page. No need to load it again.
+    if comment_page_number != 1:
+        driver.get(f"{link}?comments={str(comment_page_number)}")
 
-
-def should_leave_comment(link, comment_page_number):
-    driver.get(f"{link}?comments={str(comment_page_number)}")
     wait_for_page_to_load()
+
+    if can_comment() == False:
+        return False
+
     load_comment_section()
 
     time.sleep(1)
@@ -156,11 +155,12 @@ def should_leave_comment(link, comment_page_number):
 
     comments_soup = BeautifulSoup(comments_html_container, "html.parser")
 
+    print("Checking comment page number", comment_page_number)
+
     if my_comment_exists(comments_soup):
         print("Already left comment here")
         return False
-    elif is_last_comment_page():
-        print("Checking comment page number", comment_page_number)
+    elif is_not_last_comment_page():
         return should_leave_comment(link, comment_page_number + 1)
     else:
         return True
@@ -168,7 +168,7 @@ def should_leave_comment(link, comment_page_number):
 
 def leave_comment():
     driver.switch_to.frame("comment_ifr")
-    time.sleep(3)
+    time.sleep(2)
 
     driver.find_element(By.ID, "tinymce").find_element(By.TAG_NAME, "p").send_keys(
         my_comment
@@ -177,7 +177,7 @@ def leave_comment():
 
     driver.find_element(By.XPATH, "//button[@class='btn btn-primary btn-sm']").click()
     print("Commented on the chapter")
-    time.sleep(3)
+    time.sleep(2)
 
 
 def is_not_first_chapter():
@@ -192,48 +192,32 @@ def load_previous_chapter():
     driver.find_element(By.CSS_SELECTOR, ".btn.btn-primary.col-xs-12").click()
 
 
-def comment_on_previous_chapters(current_url):
+def run_bot(current_url):
 
     if current_url in links_from_file:
         print("The link is in the file. Aborting.")
         return
 
-    driver.get(current_url)  # This line is sus
+    driver.get(current_url)
     wait_for_page_to_load()
 
     if should_leave_comment(current_url, 1):
         leave_comment()
         wait_for_page_to_load()
-        time.sleep(2)
+        time.sleep(1)
+
         if is_not_first_chapter():
             load_previous_chapter()
             wait_for_page_to_load()
 
             current_url = driver.current_url
             print(current_url)
-            comment_on_previous_chapters(current_url)
+            run_bot(current_url)
 
 
 for link in only_new_links:
     print("Checking out ", link)
-    driver.get(link)
-    wait_for_page_to_load()
+    run_bot(link)
 
-    if can_comment():
-        if should_leave_comment(link, 1):
-            leave_comment()
-            wait_for_page_to_load()
-            if is_not_first_chapter():
-                load_previous_chapter()
-                wait_for_page_to_load()
-
-                current_url = driver.current_url
-                comment_on_previous_chapters(current_url)
-
-        time.sleep(2)
 
 print("Finished succefully")
-
-
-def vaild_paranthesis(string: str):
-    pass
