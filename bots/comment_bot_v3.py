@@ -1,11 +1,14 @@
 import json
+from pprint import pp
 import os
+from typing import Dict, Set
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 import time
 from login import Loged_in_driver_instance
+from selenium import webdriver
 
 
 follow_page = "https://www.royalroad.com/my/follows"
@@ -13,10 +16,25 @@ base_url = "https://www.royalroad.com"
 my_comment = "Thank you for the chapter!"
 my_user_name = "Lenard"
 links_file_name = "../db/novels_info.txt"
+json_file = "../db/novels_info.json"
 
 
 driver = Loged_in_driver_instance().get_logged_in_driver_instance()
+# driver = webdriver.Chrome()
+
 wait = WebDriverWait(driver, 10)
+
+
+fiction_names: Set[str] = set()
+last_commented_chapters: Set[str] = set()
+
+with open(json_file) as file:
+    data: Dict[str, str] = json.load(file)
+    fiction_names = set(data.keys())
+    last_commented_chapters = set(data.values())
+
+pp(fiction_names)
+pp(last_commented_chapters)
 
 
 def get_chapter_links() -> list[str]:
@@ -33,59 +51,21 @@ def get_chapter_links() -> list[str]:
 
     for ul in uls_of_fictions:
         a_tags = ul.find_all("a")
+        link = ""
         if len(a_tags) == 2:
-            chapter_links.append(base_url + a_tags[1]["href"])
+            link = base_url + a_tags[1]["href"]
         else:
-            chapter_links.append(base_url + a_tags[0]["href"])
+            link = base_url + a_tags[0]["href"]
+
+        if link not in last_commented_chapters:
+            chapter_links.append(link)
 
     return chapter_links
 
 
-links_to_chapters = get_chapter_links()
-print(
-    "\033[93m\033[1m This is links_to_chapters \033[0m",
-    json.dumps(links_to_chapters, indent=4),
-)
+only_new_links = get_chapter_links()
 
-
-def file_with_links_does_not_exist(file_name):
-    return os.path.isfile(file_name) == False
-
-
-def create_file_with_links(file_name):
-    file = open(file_name, "w")
-    file.close()
-
-
-if file_with_links_does_not_exist(links_file_name):
-    create_file_with_links(links_file_name)
-
-
-def filter_out_the_old_links(links_array):
-    new_links = []
-
-    with open(links_file_name, "r+") as file:
-        links_from_file = {link.replace("\n", "") for link in file.readlines()}
-
-        for link in links_array:
-
-            if link not in links_from_file:
-                new_links.append(link)
-                file.write(str(link) + "\n")
-
-        if len(links_from_file) > 1000:
-            os.remove(links_file_name)
-        print(f"There are {len(links_from_file)} links in the file")
-    return new_links, links_from_file
-
-
-only_new_links, links_from_file = filter_out_the_old_links(links_to_chapters)
-
-
-print(
-    "\033[93m\033[1m This is only_new_links \033[0m",
-    json.dumps(only_new_links, indent=4),
-)
+print("\033[93m\033[1m >>This is  only_new_links \033[0m", only_new_links)
 
 
 def wait_for_page_to_load():
@@ -194,7 +174,7 @@ def load_previous_chapter():
 
 def run_bot(current_url):
 
-    if current_url in links_from_file:
+    if current_url in last_commented_chapters:
         print("The link is in the file. Aborting.")
         return
 
@@ -218,6 +198,21 @@ def run_bot(current_url):
 for link in only_new_links:
     print("Checking out ", link)
     run_bot(link)
+
+
+with open(json_file, "r+") as file:
+    data = json.load(file)
+
+    file.seek(0)
+
+    for new_link in only_new_links:
+        fiction_name = link.split("/")[5]
+        data[fiction_name] = link
+
+    data["tes"] = "Works"
+
+    json.dump(data, file)
+    file.truncate()
 
 
 print("Finished succefully")

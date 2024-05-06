@@ -44,5 +44,5 @@ class Loged_in_driver_instance:
     def get_logged_in_driver_instance(self):
         self.log_in(self.email, self.password)
         time.sleep(1)
-        self.accept_privacy_promt()
+        # self.accept_privacy_promt()
         return self.driver
