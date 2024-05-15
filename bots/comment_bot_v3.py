@@ -29,9 +29,9 @@ fiction_names: Set[str] = set()
 last_commented_chapters: Set[str] = set()
 
 with open(json_file) as file:
-    data: Dict[str, str] = json.load(file)
-    fiction_names = set(data.keys())
-    last_commented_chapters = set(data.values())
+    file_data: Dict[str, str] = json.load(file)
+    fiction_names = set(file_data.keys())
+    last_commented_chapters = set(file_data.values())
 
 pp(fiction_names)
 pp(last_commented_chapters)
@@ -201,17 +201,17 @@ for link in only_new_links:
 
 
 with open(json_file, "r+") as file:
-    data = json.load(file)
+    file_data = json.load(file)
 
     file.seek(0)
 
     for new_link in only_new_links:
         fiction_name = link.split("/")[5]
-        data[fiction_name] = link
+        file_data[fiction_name] = new_link
 
-    data["tes"] = "Works"
+    file_data["tes"] = "Works"
 
-    json.dump(data, file)
+    json.dump(file_data, file)
     file.truncate()
 
 
