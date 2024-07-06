@@ -5,3 +5,4 @@ RR_Bot_v2.py
 html
 __pycache__
 .mypy_cache
+playwright/playwright/.auth/*

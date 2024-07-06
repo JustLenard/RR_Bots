@@ -6,11 +6,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 import time
 
-fiction_link = "https://www.royalroad.com/fiction/36065/sylver-seeker/chapter/746919/ch106-no-place-like"
+fiction_link = "https://www.royalroad.com/fiction/45331/horizon-of-war-military-romance-kingdom-building/chapter/725164/chapter-1-orbis-alius"
 path_to_chromedriver = "/home/len/Work/RR_Bots/chromedriver"
 file_name = fiction_link.split("/")[5]
 
-driver = webdriver.Chrome(path_to_chromedriver)
+driver = webdriver.Chrome()
 wait = WebDriverWait(driver, 10)
 
 

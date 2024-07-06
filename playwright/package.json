@@ -1,0 +1,20 @@
+{
+	"name": "playwright",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.ts",
+	"scripts": {
+		"runBot": "npx playwright test commentBot.script.ts --headed --ui --project chrome"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@playwright/test": "^1.45.1",
+		"@types/node": "^20.14.10",
+		"bun-types": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	}
+}
