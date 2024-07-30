@@ -37,16 +37,6 @@ export default defineConfig({
 	projects: [
 		// Setup project
 		{ name: 'setup', testMatch: /.*\.setup\.ts/ },
-		// {
-		// 	name: 'firefox',
-		// 	use: {
-		// 		...devices['Desktop Firefox'],
-		// 		// Use prepared auth state.
-		// 		storageState: 'playwright/.auth/user.json',
-		// 	},
-		// 	dependencies: ['setup'],
-		// },
-
 		{
 			name: 'chrome',
 			use: {

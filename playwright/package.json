@@ -4,13 +4,14 @@
 	"description": "",
 	"main": "index.ts",
 	"scripts": {
-		"runBot": "npx playwright test commentBot.script.ts --headed --ui --project chrome"
+		"runBot": "bun playwright test --headed --ui --project chrome",
+		"test": "bunx --bun index.ts"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
-		"@playwright/test": "^1.45.1",
+		"@playwright/test": "^1.45.3",
 		"@types/node": "^20.14.10",
 		"bun-types": "latest"
 	},
