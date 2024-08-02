@@ -2,14 +2,14 @@ import { test as getMyFollowListData, expect } from '@playwright/test'
 import { IFictionInfo } from '../utils/types'
 import { createChpaterData } from '../utils/helpers'
 
+const fictionsInfo: IFictionInfo[] = []
+
 getMyFollowListData('getMyFollowListData', async ({ page }) => {
 	await page.goto('https://www.royalroad.com/my/follows')
 	// await page.waitForSelector('button', { name: 'Accept' })
 	await page.getByRole('button', { name: 'Accept' }).click()
 	// await page.getByRole('button', { name: 'No' }).click()
 	const res = await page.locator('.fiction-list-item.row')
-
-	const fictionsInfo: IFictionInfo[] = []
 
 	for (const fictionContainer of await page.locator('.fiction-list-item.row').all()) {
 		const fictionInfo = {} as IFictionInfo
@@ -55,9 +55,4 @@ getMyFollowListData('getMyFollowListData', async ({ page }) => {
 
 		fictionsInfo.push(fictionInfo)
 	}
-	console.log('This is fictionsInfo', fictionsInfo)
-
-	const fictionTitle = page.locator('link')
-
-	page.waitForTimeout(2000)
 })
