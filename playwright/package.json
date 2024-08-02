@@ -4,8 +4,7 @@
 	"description": "",
 	"main": "index.ts",
 	"scripts": {
-		"runBot": "bun playwright test --headed --ui --project chrome",
-		"test": "bunx --bun index.ts"
+		"runBot": "npx playwright test --headed --ui --project chrome"
 	},
 	"keywords": [],
 	"author": "",
