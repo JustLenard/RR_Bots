@@ -46,24 +46,70 @@ test('getMyFollowListData', async ({ page }) => {
 	// 	}
 	// 	fictionsInfo.push(fictionInfo)
 	// }
+	const oldFic = JSON.parse(fs.readFileSync('data/fictions.json', 'utf-8'))
+
 	fs.writeFileSync('data/fictions.json', JSON.stringify(fictionsInfo))
 
-	const oldFic = JSON.parse(fs.readFileSync('data/fictions.json', 'utf-8'))
 	const needTocommentOnFictions = separateStuff(oldFic, fictionsInfo)
 
-	const fic = ['https://www.royalroad.com/fiction/8694/a-story-in-black-and-white/chapter/581595/arc-1-chapter-5']
+	// const fic = ['https://www.royalroad.com/fiction/8694/a-story-in-black-and-white/chapter/581595/arc-1-chapter-5']
+	const fic = ['https://www.royalroad.com/fiction/26675/a-journey-of-black-and-red/chapter/396750/8-outside']
 
-	await checkIfNeedToLeaveComment(page, fic[0])
+	for (const fictionLink of fic) {
+		const updatedFicInfo = await handleCommentRecurrsionLogic(page, fictionLink)
+	}
 })
 
-const checkIfNeedToLeaveComment = async (page: Page, link: string) => {
-	await page.goto(link)
-	await page.locator('#comments').scrollIntoViewIfNeeded()
-	const comments = await page.locator('.comments > div').elementHandles()
-	console.log('This is comments', comments)
-	console.log('This is comments.length', (await comments).length)
+const handleCommentRecurrsionLogic = async (page: Page, fictionLink: string) => {
+	const { needToleaveComment, ficPage } = await checkIfNeedToLeaveComment(page, fictionLink, 1)
 
-	let shouldLeaveComment = true
+	/**
+	 * creeate new data
+	 **/
+
+	if (needToleaveComment) {
+		await leaveComment(ficPage)
+
+		if (isFirstPage(ficPage)) {
+			return
+		}
+		const previousChapterLink = clickPreviousChapterButton(ficPage)
+		return handleCommentRecurrsionLogic(ficPage, previousChapterLink)
+	}
+	return
+}
+
+const clickPreviousChapterButton = (page: Page): string => {
+	return 'link'
+}
+
+const isFirstPage = (page: Page): boolean => {
+	return false
+}
+
+const leaveComment = async (page: Page) => {}
+
+const checkIfNeedToLeaveComment = async (
+	page: Page,
+	link: string,
+	commentPage = 1
+): Promise<{
+	needToleaveComment: boolean
+	ficPage: Page
+}> => {
+	await page.goto(`${link}?comments=${commentPage}`)
+	const commentLoader = page.locator('#comment-loader')
+	commentLoader.scrollIntoViewIfNeeded()
+	await commentLoader.waitFor({ state: 'detached' })
+
+	const divLocator = page.locator('.portlet-body.comments.comment-container')
+
+	await page.waitForFunction(async (div) => {
+		return div.children.length > 0
+	}, await divLocator.elementHandle())
+
+	const comments = await page.locator('.portlet-body.comments.comment-container > div').elementHandles()
+	console.log('This is comments.length', (await comments).length)
 
 	for (const commentDiv of comments) {
 		const nameContainer = await commentDiv.$('.name')
@@ -71,11 +117,23 @@ const checkIfNeedToLeaveComment = async (page: Page, link: string) => {
 		if (nameContainer && commnetContainer) {
 			const name = await nameContainer.textContent()
 			const comment = await commnetContainer.textContent()
+			console.log(`${name} : ${comment}`)
 
 			if (name === MY_USERNAME && comment === MY_COMMENT) {
-				shouldLeaveComment = false
+				return { needToleaveComment: false, ficPage: page }
 			}
 		}
 	}
-	console.log('This is shouldLeaveComment', shouldLeaveComment)
+
+	if (await checkIfIsLastCommentPage(page)) {
+		return { needToleaveComment: true, ficPage: page }
+	}
+
+	return checkIfNeedToLeaveComment(page, link, commentPage++)
+}
+
+const checkIfIsLastCommentPage = async (page: Page) => {
+	const nexCommnetPageButton = page.getByRole('link', { name: 'Next ›' })
+	const nextButtonExists = await nexCommnetPageButton.isVisible()
+	return !nextButtonExists
 }

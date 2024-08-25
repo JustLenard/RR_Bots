@@ -7,3 +7,4 @@ __pycache__
 .mypy_cache
 playwright/playwright/.auth/*
 playwright/.auth/*
+playwright/node_modules

@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "index.ts",
 	"scripts": {
-		"runBot": "npx playwright test --headed --ui --project chrome"
+		"runBot": "npx playwright test --headed --ui --project chrome",
+		"codegen": "npx playwright codegen"
 	},
 	"keywords": [],
 	"author": "",
