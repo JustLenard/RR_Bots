@@ -1,9 +1,8 @@
-import { IfStatement } from 'typescript'
+import fs from 'fs'
 import { MAIN_URL } from './constants'
-import { IFictionInfo } from './types'
-import { Page } from 'playwright'
+import { IChapterInfo, IFictionInfo, ISaveFormat } from './types'
 
-export const createChpaterData = (newestChapter: string) => {
+export const createChpaterData = (newestChapter: string): IChapterInfo => {
 	const temp = newestChapter.split('/')
 	return {
 		chapterId: Number(temp[5]),
@@ -21,6 +20,15 @@ export const separateStuff = (oldFictions: IFictionInfo[], newFictions: IFiction
 	return newFictions.filter((fiction) => !mapping.has(fiction.lastReadChapter.chapterId))
 }
 
-export const isLastPage = (page: Page) => {
-	return
+export const writeFicDataToFile = (fictions: IFictionInfo[]) => {
+	const jsonToSave = {} as ISaveFormat
+
+	fictions.forEach((fic) => {
+		jsonToSave[fic.fictionId] = fic
+	})
+	fs.writeFileSync('data/fictions.json', JSON.stringify(jsonToSave))
 }
+
+// const getChapterFullPath = (fictionInfo: IFictionInfo) => {
+// 	return `${MAIN_URL}/fiction/${fictionInfo.fictionId}/${fictionInfo.nameInUrl}/chapter/${}`
+// }

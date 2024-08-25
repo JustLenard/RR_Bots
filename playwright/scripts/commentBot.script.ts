@@ -1,66 +1,95 @@
 import { test, expect, Page } from '@playwright/test'
-import { IFictionInfo } from '../utils/types'
+import { IFictionInfo, ISaveFormat } from '../utils/types'
 import { createChpaterData, separateStuff } from '../utils/helpers'
 import fs from 'fs'
-import { MY_COMMENT, MY_USERNAME } from '../utils/constants'
+import { MAIN_URL, MY_COMMENT, MY_USERNAME } from '../utils/constants'
 
 test('getMyFollowListData', async ({ page }) => {
 	const fictionsInfo: IFictionInfo[] = []
-	// await page.goto('https://www.royalroad.com/my/follows')
-	// // await page.waitForSelector('button', { name: 'Accept' })
-	// await page.getByRole('button', { name: 'Accept' }).click()
-	// // await page.getByRole('button', { name: 'No' }).click()
-	// const res = await page.locator('.fiction-list-item.row')
-	// for (const fictionContainer of await page.locator('.fiction-list-item.row').all()) {
-	// 	const fictionInfo = {} as IFictionInfo
-	// 	const title = (await fictionContainer.locator('.fiction-title').textContent())?.trim()
-	// 	if (!title) throw Error(`Bad title ${title}`)
-	// 	fictionInfo.name = title
-	// 	const link = await fictionContainer.getByRole('link').first().getAttribute('href')
-	// 	if (!link) throw Error(`Bad link ${link}`)
-	// 	const splitLink = link.split('/')
-	// 	fictionInfo.nameInUrl = splitLink[3]
-	// 	fictionInfo.fictionId = Number(splitLink[2])
-	// 	const listItemContainer = fictionContainer.locator('.list-item')
-	// 	if ((await listItemContainer.count()) === 2) {
-	// 		const length = await fictionContainer.locator('.list-item').count()
-	// 		const newestChapter = await fictionContainer
-	// 			.locator('.list-item')
-	// 			.first()
-	// 			.getByRole('link')
-	// 			.getAttribute('href')
-	// 		if (!newestChapter) throw Error(`Bad  ${newestChapter}`)
-	// 		fictionInfo.newestChapter = createChpaterData(newestChapter)
-	// 		const lastRead = await fictionContainer.locator('.list-item').last().getByRole('link').getAttribute('href')
-	// 		if (!lastRead) throw Error(`Bad title name ${lastRead}`)
-	// 		fictionInfo.lastReadChapter = createChpaterData(lastRead)
-	// 	} else {
-	// 		const lastReadAndLastPublished = await fictionContainer
-	// 			.locator('.list-item')
-	// 			.last()
-	// 			.getByRole('link')
-	// 			.getAttribute('href')
-	// 		if (!lastReadAndLastPublished) throw Error(`Bad title name ${lastReadAndLastPublished}`)
-	// 		fictionInfo.lastReadChapter = createChpaterData(lastReadAndLastPublished)
-	// 		fictionInfo.newestChapter = createChpaterData(lastReadAndLastPublished)
-	// 	}
-	// 	fictionsInfo.push(fictionInfo)
-	// }
-	const oldFic = JSON.parse(fs.readFileSync('data/fictions.json', 'utf-8'))
+	await page.goto('https://www.royalroad.com/my/follows')
+	// await page.waitForSelector('button', { name: 'Accept' })
+	await page.getByRole('button', { name: 'Accept' }).click()
+	// await page.getByRole('button', { name: 'No' }).click()
+	const res = await page.locator('.fiction-list-item.row')
+	for (const fictionContainer of await page.locator('.fiction-list-item.row').all()) {
+		const fictionInfo = {} as IFictionInfo
+		const title = (await fictionContainer.locator('.fiction-title').textContent())?.trim()
+		if (!title) throw Error(`Bad title ${title}`)
+		fictionInfo.name = title
+		const link = await fictionContainer.getByRole('link').first().getAttribute('href')
+		if (!link) throw Error(`Bad link ${link}`)
+		const splitLink = link.split('/')
+		fictionInfo.nameInUrl = splitLink[3]
+		fictionInfo.fictionId = Number(splitLink[2])
+		const listItemContainer = fictionContainer.locator('.list-item')
+		if ((await listItemContainer.count()) === 2) {
+			const length = await fictionContainer.locator('.list-item').count()
+			const newestChapter = await fictionContainer
+				.locator('.list-item')
+				.first()
+				.getByRole('link')
+				.getAttribute('href')
+			if (!newestChapter) throw Error(`Bad  ${newestChapter}`)
+			fictionInfo.newestChapter = createChpaterData(newestChapter)
+			const lastRead = await fictionContainer.locator('.list-item').last().getByRole('link').getAttribute('href')
+			if (!lastRead) throw Error(`Bad title name ${lastRead}`)
+			fictionInfo.lastReadChapter = createChpaterData(lastRead)
+		} else {
+			const lastReadAndLastPublished = await fictionContainer
+				.locator('.list-item')
+				.last()
+				.getByRole('link')
+				.getAttribute('href')
+			if (!lastReadAndLastPublished) throw Error(`Bad title name ${lastReadAndLastPublished}`)
+			fictionInfo.lastReadChapter = createChpaterData(lastReadAndLastPublished)
+			fictionInfo.newestChapter = createChpaterData(lastReadAndLastPublished)
+		}
+		fictionsInfo.push(fictionInfo)
+	}
 
-	fs.writeFileSync('data/fictions.json', JSON.stringify(fictionsInfo))
+	// fs.writeFileSync('data/fictions.json', JSON.stringify(fictionsInfo))
 
-	const needTocommentOnFictions = separateStuff(oldFic, fictionsInfo)
+	// const needTocommentOnFictions = separateStuff(oldFic, fictionsInfo)
 
 	// const fic = ['https://www.royalroad.com/fiction/8694/a-story-in-black-and-white/chapter/581595/arc-1-chapter-5']
 	const fic = ['https://www.royalroad.com/fiction/26675/a-journey-of-black-and-red/chapter/396750/8-outside']
+
+	const oldFic: ISaveFormat = JSON.parse(fs.readFileSync('data/fictions.json', 'utf-8'))
+	for (const fic of fictionsInfo) {
+		const savedOldFic = oldFic[fic.fictionId]
+		if (oldFic) {
+			const lastReadChapter = fic.lastReadChapter.chapterId
+			const lastCommentedOnChapter = savedOldFic.lastCommentChapter?.chapterId
+
+			if (lastReadChapter !== lastCommentedOnChapter) {
+				const startCommentingFrom = await getLinkToStartCommentingOn(page, fic)
+
+				const updatedFicInfo = await handleCommentRecurrsionLogic(page, startCommentingFrom)
+			}
+		}
+	}
 
 	for (const fictionLink of fic) {
 		const updatedFicInfo = await handleCommentRecurrsionLogic(page, fictionLink)
 	}
 })
 
-const handleCommentRecurrsionLogic = async (page: Page, fictionLink: string) => {
+const getLinkToStartCommentingOn = async (page: Page, fic: IFictionInfo): Promise<string> => {
+	if (!fic.lastCommentChapter) {
+		await page.goto(`${MAIN_URL}/fiction/${fic.fictionId}/${fic.nameInUrl}`)
+		return `${MAIN_URL}/${await page
+			.locator('.chapter-row')
+			.first()
+			.getByRole('link')
+			.first()
+			.getAttribute('href')}`
+	} else {
+		await page.goto(fic.lastCommentChapter.fullPath)
+		return `${MAIN_URL}/${await page.getByRole('link', { name: '/Next Chapter/' }).first().getAttribute('href')}`
+	}
+}
+
+const handleCommentRecurrsionLogic = async (page: Page, fictionLink: string): IChapterInfo => {
 	const { needToleaveComment, ficPage } = await checkIfNeedToLeaveComment(page, fictionLink, 1)
 
 	/**
