@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test'
-import { IFictionInfo, ISaveFormat } from '../utils/types'
+import { IChapterInfo, IFictionInfo, ISaveFormat } from '../utils/types'
 import { createChpaterData, separateStuff } from '../utils/helpers'
 import fs from 'fs'
 import { MAIN_URL, MY_COMMENT, MY_USERNAME } from '../utils/constants'
@@ -11,17 +11,22 @@ test('getMyFollowListData', async ({ page }) => {
 	await page.getByRole('button', { name: 'Accept' }).click()
 	// await page.getByRole('button', { name: 'No' }).click()
 	const res = await page.locator('.fiction-list-item.row')
+
 	for (const fictionContainer of await page.locator('.fiction-list-item.row').all()) {
 		const fictionInfo = {} as IFictionInfo
 		const title = (await fictionContainer.locator('.fiction-title').textContent())?.trim()
+
 		if (!title) throw Error(`Bad title ${title}`)
 		fictionInfo.name = title
 		const link = await fictionContainer.getByRole('link').first().getAttribute('href')
+
 		if (!link) throw Error(`Bad link ${link}`)
+
 		const splitLink = link.split('/')
 		fictionInfo.nameInUrl = splitLink[3]
 		fictionInfo.fictionId = Number(splitLink[2])
 		const listItemContainer = fictionContainer.locator('.list-item')
+
 		if ((await listItemContainer.count()) === 2) {
 			const length = await fictionContainer.locator('.list-item').count()
 			const newestChapter = await fictionContainer
@@ -29,10 +34,14 @@ test('getMyFollowListData', async ({ page }) => {
 				.first()
 				.getByRole('link')
 				.getAttribute('href')
+
 			if (!newestChapter) throw Error(`Bad  ${newestChapter}`)
+
 			fictionInfo.newestChapter = createChpaterData(newestChapter)
 			const lastRead = await fictionContainer.locator('.list-item').last().getByRole('link').getAttribute('href')
+
 			if (!lastRead) throw Error(`Bad title name ${lastRead}`)
+
 			fictionInfo.lastReadChapter = createChpaterData(lastRead)
 		} else {
 			const lastReadAndLastPublished = await fictionContainer
@@ -55,23 +64,24 @@ test('getMyFollowListData', async ({ page }) => {
 	const fic = ['https://www.royalroad.com/fiction/26675/a-journey-of-black-and-red/chapter/396750/8-outside']
 
 	const oldFic: ISaveFormat = JSON.parse(fs.readFileSync('data/fictions.json', 'utf-8'))
+	const jsonToSave: ISaveFormat = {}
 	for (const fic of fictionsInfo) {
 		const savedOldFic = oldFic[fic.fictionId]
-		if (oldFic) {
+		const startCommentingFrom = await getLinkToStartCommentingOn(page, fic)
+
+		if (oldFic && savedOldFic) {
 			const lastReadChapter = fic.lastReadChapter.chapterId
 			const lastCommentedOnChapter = savedOldFic.lastCommentChapter?.chapterId
 
-			if (lastReadChapter !== lastCommentedOnChapter) {
-				const startCommentingFrom = await getLinkToStartCommentingOn(page, fic)
-
-				const updatedFicInfo = await handleCommentRecurrsionLogic(page, startCommentingFrom)
+			if (lastReadChapter === lastCommentedOnChapter) {
+				jsonToSave[fic.fictionId].lastCommentChapter = savedOldFic.lastCommentChapter
+				continue
 			}
 		}
+		const updatedFicInfo = await handleCommentRecurrsionLogic(page, startCommentingFrom)
+		jsonToSave[fic.fictionId].lastCommentChapter = updatedFicInfo
 	}
-
-	for (const fictionLink of fic) {
-		const updatedFicInfo = await handleCommentRecurrsionLogic(page, fictionLink)
-	}
+	fs.writeFileSync('data/fictions2.json', JSON.stringify(jsonToSave), 'utf-8')
 })
 
 const getLinkToStartCommentingOn = async (page: Page, fic: IFictionInfo): Promise<string> => {
@@ -89,7 +99,18 @@ const getLinkToStartCommentingOn = async (page: Page, fic: IFictionInfo): Promis
 	}
 }
 
-const handleCommentRecurrsionLogic = async (page: Page, fictionLink: string): IChapterInfo => {
+const handleCommentRecurrsionLogic = async (
+	page: Page,
+	fictionLink: string,
+	commentsWritten = 0,
+	maxCommentPermitter = 5
+): Promise<IChapterInfo> => {
+	const udpatedData = createChpaterData(page.url())
+
+	if (commentsWritten >= maxCommentPermitter) {
+		return udpatedData
+	}
+
 	const { needToleaveComment, ficPage } = await checkIfNeedToLeaveComment(page, fictionLink, 1)
 
 	/**
@@ -97,15 +118,21 @@ const handleCommentRecurrsionLogic = async (page: Page, fictionLink: string): IC
 	 **/
 
 	if (needToleaveComment) {
-		await leaveComment(ficPage)
+		const leftComment = await leaveComment(ficPage)
+
+		if (leftComment) {
+			commentsWritten++
+		} else {
+			return udpatedData
+		}
 
 		if (isFirstPage(ficPage)) {
-			return
+			return udpatedData
 		}
 		const previousChapterLink = clickPreviousChapterButton(ficPage)
-		return handleCommentRecurrsionLogic(ficPage, previousChapterLink)
+		return handleCommentRecurrsionLogic(ficPage, previousChapterLink, commentsWritten)
 	}
-	return
+	return udpatedData
 }
 
 const clickPreviousChapterButton = (page: Page): string => {
@@ -116,7 +143,9 @@ const isFirstPage = (page: Page): boolean => {
 	return false
 }
 
-const leaveComment = async (page: Page) => {}
+const leaveComment = async (page: Page): Promise<boolean> => {
+	return true
+}
 
 const checkIfNeedToLeaveComment = async (
 	page: Page,
