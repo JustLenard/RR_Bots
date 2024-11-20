@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
+import dotenv from 'dotenv'
+
+// Load .env variables
+dotenv.config()
 
 /**
  * Read environment variables from file.
@@ -44,7 +48,7 @@ export default defineConfig({
 				// Use prepared auth state.
 				// storageState: '.auth/user.json',
 			},
-			// dependencies: ['setup'],
+			dependencies: ['setup'],
 		},
 
 		/* Test against mobile viewports. */

@@ -10,7 +10,7 @@ export interface IFictionInfo {
 	fictionId: number
 	lastReadChapter: IChapterInfo
 	newestChapter: IChapterInfo
-	lastCommentChapter: IChapterInfo | null
+	lastCommentedOnChapter: IChapterInfo | null
 }
 
 export interface ISaveFormat {
