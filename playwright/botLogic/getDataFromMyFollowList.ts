@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test'
 import { FOLLOW_PAGE } from '../utils/constants'
-import { createChpaterData } from '../utils/helpers'
+import { createChapterData } from '../utils/helpers'
 import { IFictionInfo } from '../utils/types'
 
 export const getDataFromMyFollowList = async (page: Page): Promise<IFictionInfo[]> => {
@@ -14,7 +14,8 @@ export const getDataFromMyFollowList = async (page: Page): Promise<IFictionInfo[
 	/**
 	 * Get data for the fictions on my follow list
 	 **/
-	for (const fictionContainer of await page.locator('.fiction-list-item.row').all()) {
+	const allFictionContainers = await page.locator('.fiction-list-item.row').all()
+	for (const fictionContainer of allFictionContainers) {
 		const fictionInfo = {} as IFictionInfo
 		const title = (await fictionContainer.locator('.fiction-title').textContent())?.trim()
 
@@ -44,12 +45,12 @@ export const getDataFromMyFollowList = async (page: Page): Promise<IFictionInfo[
 
 			if (!newestChapter) throw Error(`Bad  ${newestChapter}`)
 
-			fictionInfo.newestChapter = createChpaterData(newestChapter)
+			fictionInfo.newestChapter = createChapterData(newestChapter)
 			const lastRead = await fictionContainer.locator('.list-item').last().getByRole('link').getAttribute('href')
 
 			if (!lastRead) throw Error(`Bad title name ${lastRead}`)
 
-			fictionInfo.lastReadChapter = createChpaterData(lastRead)
+			fictionInfo.lastReadChapter = createChapterData(lastRead)
 			/**
 			 * I've already read the last chapter that came out
 			 **/
@@ -60,8 +61,8 @@ export const getDataFromMyFollowList = async (page: Page): Promise<IFictionInfo[
 				.getByRole('link')
 				.getAttribute('href')
 			if (!lastReadAndLastPublished) throw Error(`Bad title name ${lastReadAndLastPublished}`)
-			fictionInfo.lastReadChapter = createChpaterData(lastReadAndLastPublished)
-			fictionInfo.newestChapter = createChpaterData(lastReadAndLastPublished)
+			fictionInfo.lastReadChapter = createChapterData(lastReadAndLastPublished)
+			fictionInfo.newestChapter = createChapterData(lastReadAndLastPublished)
 		}
 		fictionsInfo.push(fictionInfo)
 	}

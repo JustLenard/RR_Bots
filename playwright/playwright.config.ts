@@ -40,42 +40,15 @@ export default defineConfig({
 	/* Configure projects for major browsers */
 	projects: [
 		// Setup project
-		{ name: 'setup', testMatch: /.*\.setup\.ts/ },
+		// { name: 'setup', testMatch: /.*\.setup\.ts/ },
 		{
-			name: 'chrome',
+			name: 'commentBot',
 			use: {
 				...devices['Desktop Chrome'],
 				// Use prepared auth state.
-				// storageState: '.auth/user.json',
+				storageState: './user.json',
 			},
-			dependencies: ['setup'],
+			// dependencies: ['setup'],
 		},
-
-		/* Test against mobile viewports. */
-		// {
-		//   name: 'Mobile Chrome',
-		//   use: { ...devices['Pixel 5'] },
-		// },
-		// {
-		//   name: 'Mobile Safari',
-		//   use: { ...devices['iPhone 12'] },
-		// },
-
-		/* Test against branded browsers. */
-		// {
-		//   name: 'Microsoft Edge',
-		//   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-		// },
-		// {
-		//   name: 'Google Chrome',
-		//   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-		// },
 	],
-
-	/* Run your local dev server before starting the tests */
-	// webServer: {
-	//   command: 'npm run start',
-	//   url: 'http://127.0.0.1:3000',
-	//   reuseExistingServer: !process.env.CI,
-	// },
 })

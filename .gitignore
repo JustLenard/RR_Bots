@@ -1,10 +1,13 @@
-chromedriver
-RR_Bot_v2.py
 .gitignore
 .env
 html
 __pycache__
 .mypy_cache
+
+chromedriver
 playwright/playwright/.auth/*
 playwright/.auth/*
 playwright/node_modules
+playwright/.env
+playwright/user.json
+playwright/data/*

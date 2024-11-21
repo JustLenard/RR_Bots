@@ -2,7 +2,7 @@ import fs from 'fs'
 import { MAIN_URL } from './constants'
 import { IChapterInfo, IFictionInfo, ISaveFormat } from './types'
 
-export const createChpaterData = (newestChapter: string): IChapterInfo => {
+export const createChapterData = (newestChapter: string): IChapterInfo => {
 	const temp = newestChapter.split('/')
 	return {
 		chapterId: Number(temp[5]),
