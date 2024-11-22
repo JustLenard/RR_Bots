@@ -11,7 +11,9 @@ export const needToLeaveComment = async (
 }> => {
 	console.log(`Checking comment page ${commentPage}`)
 	await loadComments(page)
-	return { needToleaveComment: true, ficPage: page }
+	page.waitForTimeout(6000)
+
+	// return { needToleaveComment: true, ficPage: page }
 
 	const comments = await page.locator('.portlet-body.comments.comment-container > div').elementHandles()
 	for (const commentDiv of comments) {
@@ -30,9 +32,9 @@ export const needToLeaveComment = async (
 		return { needToleaveComment: true, ficPage: page }
 	}
 
-	await page.goto(`${fictionLink}?comments=${commentPage + 1}`)
+	await page.goto(`${fictionLink}?comments=${commentPage + 1}`, { waitUntil: 'domcontentloaded' })
 
-	return needToLeaveComment(page, fictionLink, commentPage + 1)
+	return await needToLeaveComment(page, fictionLink, commentPage + 1)
 }
 
 const isLastCommentPage = async (page: Page) => {

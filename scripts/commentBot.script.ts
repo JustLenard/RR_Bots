@@ -1,7 +1,8 @@
 import { Page, test } from '@playwright/test'
-import { getPreviousChapterOfCurrentFic } from '../botLogic/getLinks'
-import { isFirstPage } from '../botLogic/isFirstPage'
+import { getNextChapter as getNextChapterLink } from '../botLogic/getLinks'
+import { leaveComment } from '../botLogic/leaveComment'
 import { needToLeaveComment } from '../botLogic/needToLeaveComment'
+import { MAIN_URL, MAX_PERMITTED_COMMENTS_PER_EXECUTION } from '../utils/constants'
 import { createChapterData } from '../utils/helpers'
 import { IChapterInfo } from '../utils/types'
 
@@ -46,7 +47,15 @@ test('runCommentBot', async ({ page }) => {
 	// // }
 	// fs.writeFileSync('data/fictions2.json', JSON.stringify(jsonToSave), 'utf-8')
 
-	await handleCommentRecurrsionLogic(page, fic[0])
+	await page.goto(MAIN_URL)
+	/**
+	 * @todo remove this line later
+	 **/
+	try {
+		await page.getByRole('button', { name: 'Accept' }).click()
+	} catch {}
+
+	await handleCommentRecurrsionLogic(page, fic[0], null)
 
 	page.waitForTimeout(6000)
 })
@@ -54,23 +63,20 @@ test('runCommentBot', async ({ page }) => {
 const handleCommentRecurrsionLogic = async (
 	page: Page,
 	fictionLink: string,
-	commentsWritten = 0,
-	maxCommentPermitted = 5
+	lastReadChapterInfo: null | IChapterInfo,
+	commentsWrittenAmount = 0,
+	maxPermittedComments = MAX_PERMITTED_COMMENTS_PER_EXECUTION
 ): Promise<IChapterInfo> => {
 	await page.goto(fictionLink)
-	/**
-	 * @todo remove this line later
-	 **/
-	await page.getByRole('button', { name: 'Accept' }).click()
+	page.waitForTimeout(6000)
 
 	const udpatedData = createChapterData(page.url())
 
-	/**
-	 * Delete this true
-	 **/
-	// await page.getByRole('button', { name: 'Accept' }).click()
+	if (lastReadChapterInfo && lastReadChapterInfo.chapterId < udpatedData.chapterId) {
+		return udpatedData
+	}
 
-	if (commentsWritten >= maxCommentPermitted) {
+	if (commentsWrittenAmount >= maxPermittedComments) {
 		return udpatedData
 	}
 
@@ -82,20 +88,24 @@ const handleCommentRecurrsionLogic = async (
 	 * creeate new data
 	 **/
 	if (needToleaveComment) {
-		// const leftComment = await leaveComment(ficPage)
-		const leftComment = true
+		const leftComment = await leaveComment(ficPage)
+		page.waitForTimeout(6000)
+
+		// const leftComment = true
 
 		if (leftComment) {
-			commentsWritten++
+			commentsWrittenAmount++
 		} else {
 			return udpatedData
 		}
 
-		if (await isFirstPage(ficPage)) {
+		const nextChapterLink = await getNextChapterLink(page)
+
+		if (!nextChapterLink) {
 			return udpatedData
 		}
-		const previousChapterLink = await getPreviousChapterOfCurrentFic(ficPage)
-		return await handleCommentRecurrsionLogic(ficPage, previousChapterLink, commentsWritten)
+
+		return await handleCommentRecurrsionLogic(ficPage, nextChapterLink, lastReadChapterInfo, commentsWrittenAmount)
 	}
 	return udpatedData
 }
