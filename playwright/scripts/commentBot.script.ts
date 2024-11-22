@@ -17,10 +17,6 @@ test('runCommentBot', async ({ page }) => {
 	const fic = ['https://www.royalroad.com/fiction/8694/a-story-in-black-and-white/chapter/578251/arc-1-chapter-1']
 	// const fic = ['https://www.royalroad.com/fiction/8694/a-story-in-black-and-white/chapter/578706/arc-1-chapter-2']
 
-	// if (!fs.existsSync('data/fictions.json')) {
-	// 	fs.writeFileSync('data/fictions.json', '{}', 'utf-8')
-	// }
-
 	// const savedFictions: ISaveFormat = JSON.parse(fs.readFileSync('data/fictions.json', 'utf-8'))
 	// const jsonToSave: ISaveFormat = {}
 	// // for (const fic of fictionsInfo) {

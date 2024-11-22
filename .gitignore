@@ -11,3 +11,5 @@ playwright/node_modules
 playwright/.env
 playwright/user.json
 playwright/data/*
+playwright/playwright-report
+playwright/data

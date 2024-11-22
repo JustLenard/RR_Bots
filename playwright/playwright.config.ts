@@ -15,6 +15,7 @@ dotenv.config()
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+	globalSetup: './global-setup.ts',
 	testDir: './scripts',
 	/* Run tests in files in parallel */
 	fullyParallel: true,
@@ -40,7 +41,7 @@ export default defineConfig({
 	/* Configure projects for major browsers */
 	projects: [
 		// Setup project
-		// { name: 'setup', testMatch: /.*\.setup\.ts/ },
+		// { name: 'setup', testMatch2: /.*\.setup\.ts/ },
 		{
 			name: 'commentBot',
 			use: {
