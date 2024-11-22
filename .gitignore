@@ -5,11 +5,9 @@ __pycache__
 .mypy_cache
 
 chromedriver
-playwright/playwright/.auth/*
-playwright/.auth/*
-playwright/node_modules
-playwright/.env
-playwright/user.json
-playwright/data/*
-playwright/playwright-report
-playwright/data
+.auth
+node_modules
+.env
+playwright-report
+data
+test-results

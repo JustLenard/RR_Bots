@@ -41,13 +41,13 @@ export default defineConfig({
 	/* Configure projects for major browsers */
 	projects: [
 		// Setup project
-		// { name: 'setup', testMatch2: /.*\.setup\.ts/ },
+		// { name: 'setup', testMatch: /.*\.setup\.ts/ },
 		{
 			name: 'commentBot',
 			use: {
 				...devices['Desktop Chrome'],
 				// Use prepared auth state.
-				storageState: './user.json',
+				storageState: './.auth/user.json',
 			},
 			// dependencies: ['setup'],
 		},

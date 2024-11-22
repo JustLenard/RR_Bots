@@ -5,6 +5,10 @@ export const globalSetup = async () => {
 		fs.mkdirSync('./data')
 	}
 
+	if (!fs.existsSync('./.auth')) {
+		fs.mkdirSync('./.auth')
+	}
+
 	if (!fs.existsSync('./data/fictions.json')) {
 		fs.writeFileSync('./data/fictions.json', '{}', 'utf-8')
 	}

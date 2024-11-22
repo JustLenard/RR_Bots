@@ -1,7 +1,7 @@
 import { test as setup } from '@playwright/test'
 import { MAIN_URL } from '../utils/constants'
 
-const authFile = './user.json'
+const authFile = './.auth/user.json'
 
 setup('authenticate', async ({ page }) => {
 	const email = process.env.RR_EMAIL!
