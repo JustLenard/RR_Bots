@@ -67,12 +67,14 @@ const handleCommentRecurrsionLogic = async (
 	commentsWrittenAmount = 0,
 	maxPermittedComments = MAX_PERMITTED_COMMENTS_PER_EXECUTION
 ): Promise<IChapterInfo> => {
+	console.log('This is commentsWrittenAmount', commentsWrittenAmount)
+
 	await page.goto(fictionLink)
 	page.waitForTimeout(6000)
 
 	const udpatedData = createChapterData(page.url())
 
-	if (lastReadChapterInfo && lastReadChapterInfo.chapterId < udpatedData.chapterId) {
+	if (lastReadChapterInfo && lastReadChapterInfo.chapterId === udpatedData.chapterId) {
 		return udpatedData
 	}
 
@@ -100,6 +102,7 @@ const handleCommentRecurrsionLogic = async (
 		}
 
 		const nextChapterLink = await getNextChapterLink(page)
+		console.log('This is nextChapterLink', nextChapterLink)
 
 		if (!nextChapterLink) {
 			return udpatedData

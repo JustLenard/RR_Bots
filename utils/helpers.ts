@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { Page } from 'playwright'
 import { MAIN_URL } from './constants'
 import { IChapterInfo, IFictionInfo, ISaveFormat } from './types'
 
@@ -32,3 +33,12 @@ export const writeFicDataToFile = (fictions: IFictionInfo[]) => {
 // const getChapterFullPath = (fictionInfo: IFictionInfo) => {
 // 	return `${MAIN_URL}/fiction/${fictionInfo.fictionId}/${fictionInfo.nameInUrl}/chapter/${}`
 // }
+
+export const randomNumberGenerator = (max: number, min: number = 0) => {
+	return Number(Math.random() * (max - min) + min)
+}
+
+export const artificialWait = async (page: Page, max = 10000, min = 5000) => {
+	const timeToWaitFor = randomNumberGenerator(max, min)
+	await page.waitForTimeout(timeToWaitFor)
+}

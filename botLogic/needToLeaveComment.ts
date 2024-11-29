@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test'
 import { MY_COMMENT, MY_USERNAME } from '../utils/constants'
+import { artificialWait } from '../utils/helpers'
 
 export const needToLeaveComment = async (
 	page: Page,
@@ -11,8 +12,7 @@ export const needToLeaveComment = async (
 }> => {
 	console.log(`Checking comment page ${commentPage}`)
 	await loadComments(page)
-	page.waitForTimeout(6000)
-
+	await artificialWait(page)
 	// return { needToleaveComment: true, ficPage: page }
 
 	const comments = await page.locator('.portlet-body.comments.comment-container > div').elementHandles()
@@ -21,13 +21,16 @@ export const needToLeaveComment = async (
 		const commnetContainer = await commentDiv.$('.comment-body')
 		if (nameContainer && commnetContainer) {
 			const name = (await nameContainer.textContent())?.trim()
+			console.log('This is name', name)
 			const comment = (await commnetContainer.textContent())?.trim()
+			console.log('This is comment', comment)
 			if (name === MY_USERNAME && comment === MY_COMMENT) {
 				return { needToleaveComment: false, ficPage: page }
 			}
 		}
 	}
 
+	console.log('This is await isLastCommentPage(page)', await isLastCommentPage(page))
 	if (await isLastCommentPage(page)) {
 		return { needToleaveComment: true, ficPage: page }
 	}
@@ -38,9 +41,9 @@ export const needToLeaveComment = async (
 }
 
 const isLastCommentPage = async (page: Page) => {
-	const nexCommnetPageButton = page.getByRole('link', { name: 'Last »' })
-	const nextButtonExists = await nexCommnetPageButton.isVisible()
-	return !nextButtonExists
+	const lastCommnetPageButton = page.getByRole('link', { name: 'Last »' })
+	const lastButtonExists = await lastCommnetPageButton.isVisible()
+	return !lastButtonExists
 }
 
 const loadComments = async (page: Page) => {
